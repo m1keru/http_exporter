@@ -1,0 +1,14 @@
+[Unit]
+Description=http_exporter
+After=network.target remote-fs.target nss-lookup.target nginx.target mongod.target
+[Service]
+WorkingDirectory=/opt/http_exporter
+ExecStart=/opt/http_exporter/http_exporter --config /opt/http_exporter/config/config.yaml
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=teletype
+User=root
+Environment=
+[Install]
+WantedBy=multi-user.target
+
