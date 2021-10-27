@@ -10,19 +10,19 @@ import (
 	"time"
 
 	"github.com/m1keru/http_exporter/internal/config"
+	log "github.com/m1keru/http_exporter/internal/log"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
 // Crawler - Crawler
 type Crawler struct {
-	Config     *config.Config
-	WaitGroup  *sync.WaitGroup
-	MsgChannel *chan string
+	Config    *config.Config
+	WaitGroup *sync.WaitGroup
 }
 
 func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
-	fmt.Printf("started endpoint %s\n", endpoint.MetricName)
+	log.SharedLogger.Debugf("started endpoint %s\n", endpoint.MetricName)
 	counter := promauto.NewGauge(prometheus.GaugeOpts{
 		Name: fmt.Sprintf("%s_response_code", endpoint.MetricName),
 		Help: "Last responseCode for endpoint",
@@ -48,7 +48,7 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 			}
 			response, err := http.PostForm(endpoint.URL, data)
 			if err != nil {
-				fmt.Printf("%+v\n", err)
+				log.SharedLogger.Errorf("%+v\n", err)
 				counter.Set(float64(999))
 				continue
 			}
@@ -57,13 +57,13 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 		case "POST-JSON":
 			data, err := json.Marshal(endpoint.RequestData)
 			if err != nil {
-				fmt.Printf("unable to marshall requestData: %+v", endpoint.RequestData)
+				log.SharedLogger.Error("unable to marshall requestData: %+v", endpoint.RequestData)
 			}
 			r, err := http.NewRequest("POST", endpoint.URL, bytes.NewBuffer(data))
 			r.Header.Add("Content-Type", "application/json; charset=UTF-8")
 			response, err := client.Do(r)
 			if err != nil {
-				fmt.Printf("%+v\n", err)
+				log.SharedLogger.Errorf("%+v\n", err)
 				counter.Set(float64(999))
 				continue
 			}
@@ -78,14 +78,14 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 			}
 			response, err := http.Get(endpoint.URL + urlData)
 			if err != nil {
-				fmt.Printf("%+v\n", err)
+				log.SharedLogger.Errorf("%+v\n", err)
 				counter.Set(float64(999))
 				continue
 			}
 			counter.Set(float64(response.StatusCode))
 			response.Body.Close()
 		}
-		fmt.Println(endpoint.MetricName)
+		log.SharedLogger.Debug(endpoint.MetricName)
 		time.Sleep(time.Second * time.Duration(endpoint.ScrapeInverval))
 
 		//Parse ResponseBody
@@ -94,14 +94,15 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 }
 
 func (crawler Crawler) recordMetrics() {
+	crawler.WaitGroup.Add(1)
 	for _, endpoint := range crawler.Config.Endpoints {
 		go crawler.endpointLoop(endpoint)
 	}
+	crawler.WaitGroup.Done()
 }
 
 // Run - Run
 func (crawler Crawler) Run() error {
 	crawler.recordMetrics()
-	crawler.WaitGroup.Done()
 	return nil
 }
