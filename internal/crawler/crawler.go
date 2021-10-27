@@ -46,9 +46,9 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 	if endpoint.URL == "" && endpoint.URLList != nil {
 		re, _ := regexp.Compile(`[^\w]`)
 		for _, subURL := range endpoint.URLList {
-			id := re.ReplaceAllString(subURL, "")
 			subEndpoint := endpoint
 			subEndpoint.URL = subURL
+			id := re.ReplaceAllString(subURL, "")
 			subEndpoint.MetricName = subEndpoint.MetricName + "_" + id
 			subEndpoint.URLList = nil
 			log.SharedLogger.Infof("%+v", subEndpoint)
