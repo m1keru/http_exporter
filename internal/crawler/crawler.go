@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
+	"regexp"
 	"sync"
 	"time"
 
@@ -23,10 +25,21 @@ type Crawler struct {
 
 func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 	log.SharedLogger.Debugf("started endpoint %s\n", endpoint.MetricName)
-	counter := promauto.NewGauge(prometheus.GaugeOpts{
+	// Metrics
+	metricResponseCode := promauto.NewGauge(prometheus.GaugeOpts{
 		Name: fmt.Sprintf("%s_response_code", endpoint.MetricName),
 		Help: "Last responseCode for endpoint",
 	})
+	metricResponseBodyAssert := promauto.NewGauge(prometheus.GaugeOpts{
+		Name: fmt.Sprintf("%s_response_body_assert", endpoint.MetricName),
+		Help: "Last response body regex assert for endpoint",
+	})
+
+	metricResponseTime := promauto.NewGauge(prometheus.GaugeOpts{
+		Name: fmt.Sprintf("%s_response_time", endpoint.MetricName),
+		Help: "Last response time for endpoint",
+	})
+
 	client := &http.Client{
 		Timeout: time.Second * time.Duration(endpoint.Timeout),
 	}
@@ -46,13 +59,17 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 			for key, val := range endpoint.RequestData {
 				data.Set(key, val)
 			}
+			start := time.Now()
 			response, err := http.PostForm(endpoint.URL, data)
 			if err != nil {
-				log.SharedLogger.Errorf("%+v\n", err)
-				counter.Set(float64(999))
+				log.SharedLogger.Errorf("crawler error:%+v\n", err)
+				metricResponseCode.Set(float64(999))
 				continue
 			}
-			counter.Set(float64(response.StatusCode))
+			elapsed := time.Since(start).Seconds()
+			metricResponseTime.Set(float64(elapsed))
+			processBody(*response, endpoint, metricResponseBodyAssert)
+			metricResponseCode.Set(float64(response.StatusCode))
 			response.Body.Close()
 		case "POST-JSON":
 			data, err := json.Marshal(endpoint.RequestData)
@@ -61,13 +78,17 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 			}
 			r, err := http.NewRequest("POST", endpoint.URL, bytes.NewBuffer(data))
 			r.Header.Add("Content-Type", "application/json; charset=UTF-8")
+			start := time.Now()
 			response, err := client.Do(r)
+			elapsed := time.Since(start).Seconds()
+			metricResponseTime.Set(float64(elapsed))
 			if err != nil {
 				log.SharedLogger.Errorf("%+v\n", err)
-				counter.Set(float64(999))
+				metricResponseCode.Set(float64(999))
 				continue
 			}
-			counter.Set(float64(response.StatusCode))
+			processBody(*response, endpoint, metricResponseBodyAssert)
+			metricResponseCode.Set(float64(response.StatusCode))
 			response.Body.Close()
 		default:
 			urlData := "?"
@@ -76,13 +97,17 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 					urlData += key + "=" + val + "&"
 				}
 			}
+			start := time.Now()
 			response, err := http.Get(endpoint.URL + urlData)
+			elapsed := time.Since(start).Seconds()
+			metricResponseTime.Set(float64(elapsed))
 			if err != nil {
 				log.SharedLogger.Errorf("%+v\n", err)
-				counter.Set(float64(999))
+				metricResponseCode.Set(float64(999))
 				continue
 			}
-			counter.Set(float64(response.StatusCode))
+			processBody(*response, endpoint, metricResponseBodyAssert)
+			metricResponseCode.Set(float64(response.StatusCode))
 			response.Body.Close()
 		}
 		log.SharedLogger.Debug(endpoint.MetricName)
@@ -90,6 +115,26 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 
 		//Parse ResponseBody
 		//Increase Metric
+	}
+}
+
+func processBody(response http.Response, endpoint config.Endpoint, metricResponseBodyAssert prometheus.Gauge) {
+	if endpoint.ResponseBodyRegex != "" {
+		log.SharedLogger.Debug("ResponseBodyRegex:%s", endpoint.ResponseBodyRegex)
+		responseRegex, err := regexp.Compile(endpoint.ResponseBodyRegex)
+		if err != nil {
+			log.SharedLogger.Errorf("crawler: unable to parse regex for %s", endpoint)
+		}
+		body, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			log.SharedLogger.Errorf("crawler error: unable to read response body %+v\n")
+		}
+		if responseRegex.MatchString(string(body)) {
+			metricResponseBodyAssert.Set(1)
+		} else {
+			metricResponseBodyAssert.Set(0)
+		}
+		log.SharedLogger.Debugf("%s", body)
 	}
 }
 

@@ -15,13 +15,14 @@ type Daemon struct {
 
 //Endpoint - Endpoint
 type Endpoint struct {
-	URL            string            `yaml:"url"`
-	ResponseCode   string            `yaml:"responseCode"`
-	MetricName     string            `yaml:"metricName"`
-	RequestType    string            `yaml:"requestType"`
-	RequestData    map[string]string `yaml:"requestData,flow"`
-	ScrapeInverval int               `yaml:"scrapeInterval"`
-	Timeout        int               `yaml:"timeout"`
+	URL               string            `yaml:"url"`
+	ResponseCode      string            `yaml:"responseCode"`
+	MetricName        string            `yaml:"metricName"`
+	RequestType       string            `yaml:"requestType"`
+	RequestData       map[string]string `yaml:"requestData,flow"`
+	ScrapeInverval    int               `yaml:"scrapeInterval"`
+	Timeout           int               `yaml:"timeout"`
+	ResponseBodyRegex string            `yaml:"responseBodyRegex"`
 }
 
 //Log - Log
