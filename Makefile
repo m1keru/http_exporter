@@ -29,6 +29,7 @@ default: all
 
 # non-phony targets
 $(TARGET): $(OBJ)
+	$(CC) mod tidy
 	cd cmd/$(TARGET_NAME) && \
 	$(CC) build -o ../../dist/$(TARGET_NAME)
 

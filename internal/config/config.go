@@ -16,6 +16,7 @@ type Daemon struct {
 //Endpoint - Endpoint
 type Endpoint struct {
 	URL               string            `yaml:"url"`
+	URLList           []string          `yaml:"urlList,flow"`
 	ResponseCode      string            `yaml:"responseCode"`
 	MetricName        string            `yaml:"metricName"`
 	RequestType       string            `yaml:"requestType"`

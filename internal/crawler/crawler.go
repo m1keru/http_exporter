@@ -24,7 +24,7 @@ type Crawler struct {
 }
 
 func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
-	log.SharedLogger.Debugf("started endpoint %s\n", endpoint.MetricName)
+	log.SharedLogger.Infof("started endpoint name:%s url:%s", endpoint.MetricName, endpoint.URL)
 	// Metrics
 	metricResponseCode := promauto.NewGauge(prometheus.GaugeOpts{
 		Name: fmt.Sprintf("%s_response_code", endpoint.MetricName),
@@ -39,6 +39,23 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 		Name: fmt.Sprintf("%s_response_time", endpoint.MetricName),
 		Help: "Last response time for endpoint",
 	})
+
+	if endpoint.URL != "" && endpoint.URLList != nil {
+		log.SharedLogger.Fatalf("crawler: error in config - can not use `url` and `urlList` together")
+	}
+	if endpoint.URL == "" && endpoint.URLList != nil {
+		re, _ := regexp.Compile(`[^\w]`)
+		for _, subURL := range endpoint.URLList {
+			id := re.ReplaceAllString(subURL, "")
+			subEndpoint := endpoint
+			subEndpoint.URL = subURL
+			subEndpoint.MetricName = subEndpoint.MetricName + "_" + id
+			subEndpoint.URLList = nil
+			log.SharedLogger.Infof("%+v", subEndpoint)
+			go crawler.endpointLoop(subEndpoint)
+		}
+		return
+	}
 
 	client := &http.Client{
 		Timeout: time.Second * time.Duration(endpoint.Timeout),
@@ -62,8 +79,9 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 			start := time.Now()
 			response, err := http.PostForm(endpoint.URL, data)
 			if err != nil {
-				log.SharedLogger.Errorf("crawler error:%+v\n", err)
+				log.SharedLogger.Errorf("crawler error: endpoint: %+v\n %+v\n", endpoint, err)
 				metricResponseCode.Set(float64(999))
+				time.Sleep(time.Second * time.Duration(endpoint.ScrapeInverval))
 				continue
 			}
 			elapsed := time.Since(start).Seconds()
@@ -85,6 +103,7 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 			if err != nil {
 				log.SharedLogger.Errorf("%+v\n", err)
 				metricResponseCode.Set(float64(999))
+				time.Sleep(time.Second * time.Duration(endpoint.ScrapeInverval))
 				continue
 			}
 			processBody(*response, endpoint, metricResponseBodyAssert)
@@ -104,6 +123,7 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 			if err != nil {
 				log.SharedLogger.Errorf("%+v\n", err)
 				metricResponseCode.Set(float64(999))
+				time.Sleep(time.Second * time.Duration(endpoint.ScrapeInverval))
 				continue
 			}
 			processBody(*response, endpoint, metricResponseBodyAssert)
@@ -112,9 +132,6 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 		}
 		log.SharedLogger.Debug(endpoint.MetricName)
 		time.Sleep(time.Second * time.Duration(endpoint.ScrapeInverval))
-
-		//Parse ResponseBody
-		//Increase Metric
 	}
 }
 
