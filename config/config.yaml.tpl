@@ -45,7 +45,6 @@ endpoints:
       action: config
       adid: monitoring-adid
       apiver: 100.0.0
-      app: com.easybrain.monitoring
       app_version: 100.0.0
       device_model: monitoring
       devicetype: phone
