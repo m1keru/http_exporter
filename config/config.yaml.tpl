@@ -4,15 +4,17 @@ log:
   level: debug
   path: "./app.log"
 endpoints:
-  - url: "https://ya.ru"
-    metricName: yandex
+  - url: "https://example.com"
+    metricName: example_1
     responseCode: 200
     requestType: GET
     scrapeInterval: 2
     timeout: 2
-  - url: "https://api-nonogram-android.easybrain.com/api.php"
+  - urlList:
+      - "https://1.example.com/api.php"
+      - "https://2.example.com/api.php"
     responseCode: 200
-    metricName: api10_android
+    metricName: example_2
     requestType: "POST-FORM"
     requestData:
       action: "config"
@@ -35,9 +37,9 @@ endpoints:
       platform: "android"
       resolution_app: "1x1"
       resolution_real: "1x1"
-  - url: "https://api-aquapuzzle-ios.easybrain.com/api.php"
+  - url: "https://example.com/api.php"
     responseCode: 200
-    metricName: api10_ios
+    metricName: example_3
     requestType: "GET"
     requestData:
       action: config
@@ -53,3 +55,8 @@ endpoints:
       resolution: 1x1
       uid: 1111111111111111111111111111111111111111111111111111111111111111
       utc_offset: 0
+  - url: "https://example.com/healthcheck"
+    responseCode: 200
+    metricName: example_4
+    requestType: "GET"
+    responseBodyRegex: ".*enabled.*"
