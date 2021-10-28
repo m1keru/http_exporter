@@ -47,3 +47,10 @@ distclean:
 	@echo CLEAN $(CLEAN_LIST)
 	@rm -f $(DISTCLEAN_LIST)
 
+.PHONY: install
+install:
+	@cp -f dist/http_exporter /usr/local/bin/
+	@mkdir -p /etc/http_exporter
+	@cp config/config.yaml.tpl /etc/http_exporter/config.yaml
+	@cp init/http_exporter /etc/systemd/system/http_exporter.service
+	@systemctl enable http_exporter.service
