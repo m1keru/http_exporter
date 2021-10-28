@@ -9,7 +9,9 @@ make
 ### Install
 ```
 * make clean && make
-* ./build/install.sh
+* sudo make install
+* vim /etc/http_exporter/config.yaml
+* sudo systemctl start http_exporter 
 ```
 
 ### Example output
