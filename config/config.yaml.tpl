@@ -59,3 +59,12 @@ endpoints:
     metricName: example_4
     requestType: "GET"
     responseBodyRegex: ".*enabled.*"
+  - url: "http://example.com/test/"
+    responseCode: 200
+    metricName: json_test
+    requestType: "POST-JSON"
+    requestData:
+      id: "2"
+      title: "ping"
+      author: "http_exporter"
+
