@@ -22,5 +22,5 @@ jobs:
         goos: ${{ matrix.goos }}
         goarch: ${{ matrix.goarch }}
         binary_name: "http_exporter"
-        extra_files: config/config.yaml.tpl init/http_exporter
+        extra_files: config/config.yaml.tpl init/http_exporter dist/http_exporter
         build_command: make
