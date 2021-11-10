@@ -31,6 +31,6 @@ func main() {
 	log.SharedLogger.Debug("waiting on WaitGroup")
 
 	http.Handle("/metrics", promhttp.Handler())
-	http.ListenAndServe(":2112", nil)
+	log.SharedLogger.Fatal(http.ListenAndServe(cfg.Daemon.Listen, nil))
 	wg.Wait()
 }

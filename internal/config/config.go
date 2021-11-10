@@ -11,6 +11,7 @@ import (
 type Daemon struct {
 	LogFile string `yaml:"logfile"`
 	Debug   bool   `yaml:"debug"`
+	Listen  string `yaml:"listen"`
 }
 
 //Endpoint - Endpoint

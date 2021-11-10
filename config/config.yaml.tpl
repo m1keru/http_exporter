@@ -3,6 +3,7 @@ daemon:
 log:
   level: debug
   path: "./app.log"
+  listen: 0.0.0.0:9222
 endpoints:
   - url: "https://example.com"
     metricName: example_1
