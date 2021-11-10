@@ -1,6 +1,11 @@
 ## HTTP exporter 
 ####  It exposes `response codes`, `body regexes`, `request time` as metrics
 
+### Supporter types of endpoints:
+* GET
+* POST-FORM
+* POST-JSON
+
 ### build
 ```bash 
 make
@@ -13,6 +18,14 @@ make
 * vim /etc/http_exporter/config.yaml
 * sudo systemctl start http_exporter 
 ```
+
+### Install from release
+* download release https://github.com/m1keru/http_exporter/releases
+* mkdir /tmp/http_exporter 
+* mv http_exporter-x.x.x.tar.gz /tmp/http_exporter
+* cd /tmp/http_exporter
+* tar -zxvf http_exporter-x.x.x.tar.gz
+* sudo make install_release
 
 ### Example output
 ```
