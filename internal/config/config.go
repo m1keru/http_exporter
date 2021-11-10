@@ -49,7 +49,7 @@ func (cfg *Config) Setup(filename *string) error {
 	decoder := yaml.NewDecoder(configFile)
 	err = decoder.Decode(&cfg)
 	if err != nil {
-		return errors.New("Unable to Unmarshal Config")
+		return errors.New("unable to Unmarshal Config")
 	}
 	return nil
 }

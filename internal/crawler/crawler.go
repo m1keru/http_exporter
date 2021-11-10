@@ -95,6 +95,9 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 				log.SharedLogger.Error("unable to marshall requestData: %+v", endpoint.RequestData)
 			}
 			r, err := http.NewRequest("POST", endpoint.URL, bytes.NewBuffer(data))
+			if err != nil {
+				log.SharedLogger.Error("unable to do request err: %+v requestData: %+v", err, endpoint.RequestData)
+			}
 			r.Header.Add("Content-Type", "application/json; charset=UTF-8")
 			start := time.Now()
 			response, err := client.Do(r)
