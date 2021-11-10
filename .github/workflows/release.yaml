@@ -21,6 +21,6 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         goos: ${{ matrix.goos }}
         goarch: ${{ matrix.goarch }}
-        binary_name: "http_exporter_auto"
-        extra_files: config/config.yaml.tpl init/http_exporter.service
+        binary_name: "http_exporter"
+        extra_files: config/config.yaml.tpl init/http_exporter.service cmd/http_exporter
         build_command: make
