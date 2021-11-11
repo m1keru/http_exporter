@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"os"
 	"sync"
 
 	"github.com/m1keru/http_exporter/internal/config"
@@ -12,9 +13,17 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
+// AppVersion -release version
+const AppVersion = "0.0.9"
+
 func main() {
 	configpath := flag.String("config", "config.yaml", "path to config file")
+	version := flag.Bool("version", false, "current version")
 	flag.Parse()
+	if *version {
+		fmt.Println(AppVersion)
+		os.Exit(0)
+	}
 	var cfg config.Config
 	if err := cfg.Setup(configpath); err != nil {
 		panic(fmt.Errorf("config error: %+v", err))
