@@ -64,9 +64,18 @@ install_release:
 	@cp http_exporter.service /etc/systemd/system/http_exporter.service
 	@systemctl daemon-reload
 	@systemctl enable http_exporter.service
-.PHONY: bump_version
-bump_version:
-	$(eval VERSION := $(shell git describe --tags --abbrev=0))
-	@echo $(VERSION)
-	@sed -i "s/AppVersion =.*/AppVersion = \"$(VERSION)\"/g" cmd/http_exporter/main.go
 
+VERSION := $(shell git describe --tags --abbrev=0 | sed -Ee 's/^v|-.*//')
+.PHONY: version
+version:
+	@echo v$(VERSION)
+
+SEMVER_TYPES := major minor patch
+BUMP_TARGETS := $(addprefix bump-,$(SEMVER_TYPES))
+.PHONY: $(BUMP_TARGETS)
+$(BUMP_TARGETS):
+	$(eval bump_type := $(strip $(word 2,$(subst -, ,$@))))
+	$(eval f := $(words $(shell a="$(SEMVER_TYPES)";echo $${a/$(bump_type)*/$(bump_type)} )))
+	$(eval ver := $(shell echo $(VERSION) | awk -F. -v OFS=. -v f=$(f) '{ $$f++ } 1'))
+	@echo $(ver)
+	@sed -i "s/AppVersion =.*/AppVersion = \"$(ver)\"/g" cmd/http_exporter/main.go
