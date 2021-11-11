@@ -1,3 +1,4 @@
+![example workflow](https://github.com/m1keru/http_exporter/actions/workflows/release.yaml/badge.svg)
 ## HTTP exporter 
 ####  It exposes `response codes`, `body regexes`, `request time` as metrics
 
@@ -12,7 +13,7 @@ make
 ```
 
 ### Install
-```
+```bash
 * make clean && make
 * sudo make install
 * vim /etc/http_exporter/config.yaml
@@ -20,13 +21,14 @@ make
 ```
 
 ### Install from release
+```bash
 * download release https://github.com/m1keru/http_exporter/releases
 * mkdir /tmp/http_exporter 
 * mv http_exporter-x.x.x.tar.gz /tmp/http_exporter
 * cd /tmp/http_exporter
 * tar -zxvf http_exporter-x.x.x.tar.gz
 * sudo make install_release
-
+```
 ### Example output
 ```
 # HELP response_code Last responseCode for endpoint
