@@ -29,13 +29,14 @@ make
 
 ### Example output
 ```
-# HELP sudoku_health_response_body_assert Last response body regex assert for endpoint
-# TYPE sudoku_health_response_body_assert gauge
-sudoku_health_response_body_assert 1
-# HELP sudoku_health_response_code Last responseCode for endpoint
-# TYPE sudoku_health_response_code gauge
-sudoku_health_response_code 200
-# HELP sudoku_health_response_time Last response time for endpoint
-# TYPE sudoku_health_response_time gauge
-sudoku_health_response_time 0.436875086
+# HELP response_code Last responseCode for endpoint
+# TYPE response_code gauge
+response_code{url="https://api-android.example.com"} 200
+response_code{url="https://api-ios.example.com"} 400
+# HELP response_time Last response time for endpoint
+# TYPE response_time gauge
+response_time{url="https://api-android.example.com"} 0.46648195
+response_time{url="https://api-ios.example.com"} 0.1831524
+# TYPE response_body_assert gauge
+response_body_assert{url="https://example.com/healthcheck"} 1
 ```
