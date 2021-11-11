@@ -149,16 +149,16 @@ func processBody(response http.Response, endpoint config.Endpoint, metricRespons
 func (crawler Crawler) recordMetrics() {
 	crawler.WaitGroup.Add(1)
 	crawler.metricResponseCode = promauto.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "response_code",
+		Name: "http_exporter_response_code",
 		Help: "Last responseCode for endpoint",
 	}, []string{"url"})
 	crawler.metricResponseBodyAssert = promauto.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "response_body_assert",
+		Name: "http_exporter_response_body_assert",
 		Help: "Last response body regex assert for endpoint",
 	}, []string{"url"})
 
 	crawler.metricResponseTime = promauto.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "response_time",
+		Name: "http_exporter_response_time",
 		Help: "Last response time for endpoint",
 	}, []string{"url"})
 

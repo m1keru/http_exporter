@@ -31,12 +31,12 @@ make
 ```
 # HELP response_code Last responseCode for endpoint
 # TYPE response_code gauge
-response_code{url="https://api-android.example.com"} 200
-response_code{url="https://api-ios.example.com"} 400
+http_exporter_response_code{url="https://api-android.example.com"} 200
+http_exporter_response_code{url="https://api-ios.example.com"} 400
 # HELP response_time Last response time for endpoint
 # TYPE response_time gauge
-response_time{url="https://api-android.example.com"} 0.46648195
-response_time{url="https://api-ios.example.com"} 0.1831524
+http_exporter_response_time{url="https://api-android.example.com"} 0.46648195
+http_exporter_response_time{url="https://api-ios.example.com"} 0.1831524
 # TYPE response_body_assert gauge
-response_body_assert{url="https://example.com/healthcheck"} 1
+http_exporter_response_body_assert{url="https://example.com/healthcheck"} 1
 ```
