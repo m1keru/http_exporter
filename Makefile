@@ -53,6 +53,7 @@ install:
 	@mkdir -p /etc/http_exporter
 	@cp config/config.yaml.tpl /etc/http_exporter/config.yaml
 	@cp init/http_exporter.service /etc/systemd/system/http_exporter.service
+	@systemctl daemon-reload
 	@systemctl enable http_exporter.service
 
 .PHONY: install_release
@@ -61,5 +62,6 @@ install_release:
 	@mkdir -p /etc/http_exporter
 	@cp config.yaml.tpl /etc/http_exporter/config.yaml
 	@cp http_exporter.service /etc/systemd/system/http_exporter.service
+	@systemctl daemon-reload
 	@systemctl enable http_exporter.service
 
