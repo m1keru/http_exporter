@@ -64,4 +64,9 @@ install_release:
 	@cp http_exporter.service /etc/systemd/system/http_exporter.service
 	@systemctl daemon-reload
 	@systemctl enable http_exporter.service
+.PHONY: bump_version
+bump_version:
+	$(eval VERSION := $(shell git describe --tags --abbrev=0))
+	@echo $(VERSION)
+	@sed -i "s/AppVersion =.*/AppVersion = \"$(VERSION)\"/g" cmd/http_exporter/main.go
 
