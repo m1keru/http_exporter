@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -64,8 +66,17 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 			for key, val := range endpoint.RequestData {
 				data.Set(key, val)
 			}
+			r, err := http.NewRequest("POST", endpoint.URL, strings.NewReader(data.Encode()))
+			if err != nil {
+				log.SharedLogger.Errorf("%+v\n", err)
+			}
+			if endpoint.BasicAuthUserName != "" && endpoint.BasicAuthPassword != "" {
+				r.SetBasicAuth(endpoint.BasicAuthUserName, endpoint.BasicAuthPassword)
+			}
+			r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+			r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
 			start := time.Now()
-			response, err := http.PostForm(endpoint.URL, data)
+			response, err := client.Do(r)
 			if err != nil {
 				log.SharedLogger.Errorf("crawler error: endpoint: %+v\n %+v\n", endpoint, err)
 				crawler.metricResponseCode.WithLabelValues(endpoint.URL).Set(999)
@@ -86,9 +97,15 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 			if err != nil {
 				log.SharedLogger.Error("unable to do request err: %+v requestData: %+v", err, endpoint.RequestData)
 			}
+			if endpoint.BasicAuthUserName != "" && endpoint.BasicAuthPassword != "" {
+				r.SetBasicAuth(endpoint.BasicAuthUserName, endpoint.BasicAuthPassword)
+			}
 			r.Header.Add("Content-Type", "application/json; charset=UTF-8")
 			start := time.Now()
 			response, err := client.Do(r)
+			if err != nil {
+				log.SharedLogger.Errorf("unable to do request to %s error:%+v\n", endpoint.URL, err)
+			}
 			elapsed := time.Since(start).Seconds()
 			crawler.metricResponseTime.WithLabelValues(endpoint.URL).Set(float64(elapsed))
 			if err != nil {
@@ -108,7 +125,14 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 				}
 			}
 			start := time.Now()
-			response, err := http.Get(endpoint.URL + urlData)
+			req, err := http.NewRequest("GET", endpoint.URL+urlData, nil)
+			if endpoint.BasicAuthUserName != "" && endpoint.BasicAuthPassword != "" {
+				req.SetBasicAuth(endpoint.BasicAuthUserName, endpoint.BasicAuthPassword)
+			}
+			response, err := client.Do(req)
+			if err != nil {
+				log.SharedLogger.Errorf("unable to do request to %s error:%+v\n", endpoint.URL, err)
+			}
 			elapsed := time.Since(start).Seconds()
 			crawler.metricResponseTime.WithLabelValues(endpoint.URL).Set(float64(elapsed))
 			if err != nil {

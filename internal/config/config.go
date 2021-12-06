@@ -25,6 +25,8 @@ type Endpoint struct {
 	ScrapeInverval    int               `yaml:"scrapeInterval"`
 	Timeout           int               `yaml:"timeout"`
 	ResponseBodyRegex string            `yaml:"responseBodyRegex"`
+	BasicAuthUserName string            `yaml:"basicAuthUserName"`
+	BasicAuthPassword string            `yaml:"basicAuthPassword"`
 }
 
 //Log - Log

@@ -1,9 +1,9 @@
 ---
 daemon:
+  listen: 0.0.0.0:9222
 log:
   level: debug
   path: "./app.log"
-  listen: 0.0.0.0:9222
 endpoints:
   - url: "https://example.com"
     metricName: example_1
@@ -11,6 +11,8 @@ endpoints:
     requestType: GET
     scrapeInterval: 2
     timeout: 2
+    basicAuthUserName: admin
+    basicAuthPassword: admin
   - urlList:
       - "https://1.example.com/api.php"
       - "https://2.example.com/api.php"
