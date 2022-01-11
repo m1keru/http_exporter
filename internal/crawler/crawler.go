@@ -59,9 +59,8 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 		endpoint.Timeout = 3
 	}
 
-	severity := endpoint.Severity
-	if severity == "" {
-		severity = "warning"
+	if endpoint.Severity == "" {
+		endpoint.Severity = "warning"
 	}
 
 	for {
@@ -85,14 +84,14 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 			response, err := client.Do(r)
 			if err != nil {
 				log.SharedLogger.Errorf("crawler error: endpoint: %+v\n %+v\n", endpoint, err)
-				crawler.metricResponseCode.WithLabelValues(endpoint.URL, severity).Set(999)
+				crawler.metricResponseCode.WithLabelValues(endpoint.URL, endpoint.Severity).Set(999)
 				time.Sleep(time.Second * time.Duration(endpoint.ScrapeInverval))
 				continue
 			}
 			elapsed := time.Since(start).Seconds()
-			crawler.metricResponseTime.WithLabelValues(endpoint.URL, severity).Set(float64(elapsed))
+			crawler.metricResponseTime.WithLabelValues(endpoint.URL, endpoint.Severity).Set(float64(elapsed))
 			processBody(*response, endpoint, crawler.metricResponseBodyAssert)
-			crawler.metricResponseCode.WithLabelValues(endpoint.URL, severity).Set(float64(response.StatusCode))
+			crawler.metricResponseCode.WithLabelValues(endpoint.URL, endpoint.Severity).Set(float64(response.StatusCode))
 			response.Body.Close()
 		case "POST-JSON":
 			data, err := json.Marshal(endpoint.RequestData)
@@ -113,15 +112,15 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 				log.SharedLogger.Errorf("unable to do request to %s error:%+v\n", endpoint.URL, err)
 			}
 			elapsed := time.Since(start).Seconds()
-			crawler.metricResponseTime.WithLabelValues(endpoint.URL, severity).Set(float64(elapsed))
+			crawler.metricResponseTime.WithLabelValues(endpoint.URL, endpoint.Severity).Set(float64(elapsed))
 			if err != nil {
 				log.SharedLogger.Errorf("%+v\n", err)
-				crawler.metricResponseCode.WithLabelValues(endpoint.URL, severity).Set(999)
+				crawler.metricResponseCode.WithLabelValues(endpoint.URL, endpoint.Severity).Set(999)
 				time.Sleep(time.Second * time.Duration(endpoint.ScrapeInverval))
 				continue
 			}
 			processBody(*response, endpoint, crawler.metricResponseBodyAssert)
-			crawler.metricResponseCode.WithLabelValues(endpoint.URL, severity).Set(float64(response.StatusCode))
+			crawler.metricResponseCode.WithLabelValues(endpoint.URL, endpoint.Severity).Set(float64(response.StatusCode))
 			response.Body.Close()
 		default:
 			urlData := "?"
@@ -140,15 +139,15 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 				log.SharedLogger.Errorf("unable to do request to %s error:%+v\n", endpoint.URL, err)
 			}
 			elapsed := time.Since(start).Seconds()
-			crawler.metricResponseTime.WithLabelValues(endpoint.URL, severity).Set(float64(elapsed))
+			crawler.metricResponseTime.WithLabelValues(endpoint.URL, endpoint.Severity).Set(float64(elapsed))
 			if err != nil {
 				log.SharedLogger.Errorf("%+v\n", err)
-				crawler.metricResponseCode.WithLabelValues(endpoint.URL, severity).Set(999)
+				crawler.metricResponseCode.WithLabelValues(endpoint.URL, endpoint.Severity).Set(999)
 				time.Sleep(time.Second * time.Duration(endpoint.ScrapeInverval))
 				continue
 			}
 			processBody(*response, endpoint, crawler.metricResponseBodyAssert)
-			crawler.metricResponseCode.WithLabelValues(endpoint.URL, severity).Set(float64(response.StatusCode))
+			crawler.metricResponseCode.WithLabelValues(endpoint.URL, endpoint.Severity).Set(float64(response.StatusCode))
 			response.Body.Close()
 		}
 		log.SharedLogger.Debug(endpoint.MetricName)
@@ -168,9 +167,9 @@ func processBody(response http.Response, endpoint config.Endpoint, metricRespons
 			log.SharedLogger.Errorf("crawler error: unable to read response body %+v\n")
 		}
 		if responseRegex.MatchString(string(body)) {
-			metricResponseBodyAssert.WithLabelValues(endpoint.URL).Set(1)
+			metricResponseBodyAssert.WithLabelValues(endpoint.URL, endpoint.Severity).Set(1)
 		} else {
-			metricResponseBodyAssert.WithLabelValues(endpoint.URL).Set(0)
+			metricResponseBodyAssert.WithLabelValues(endpoint.URL, endpoint.Severity).Set(0)
 		}
 		log.SharedLogger.Debugf("endpoint: %s, response: %s", endpoint.URL, body)
 	}
