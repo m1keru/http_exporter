@@ -19,6 +19,7 @@ type Endpoint struct {
 	URL               string            `yaml:"url"`
 	URLList           []string          `yaml:"urlList,flow"`
 	ResponseCode      string            `yaml:"responseCode"`
+	Severity          string            `yaml:"severity"`
 	MetricName        string            `yaml:"metricName"`
 	RequestType       string            `yaml:"requestType"`
 	RequestData       map[string]string `yaml:"requestData,flow"`

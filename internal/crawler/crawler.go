@@ -59,7 +59,13 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 		endpoint.Timeout = 3
 	}
 
+	severity := endpoint.Severity
+	if severity == "" {
+		severity = "warning"
+	}
+
 	for {
+		log.SharedLogger.Debugf("Endpoint: %+v", endpoint)
 		switch endpoint.RequestType {
 		case "POST-FORM":
 			data := url.Values{}
@@ -79,14 +85,14 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 			response, err := client.Do(r)
 			if err != nil {
 				log.SharedLogger.Errorf("crawler error: endpoint: %+v\n %+v\n", endpoint, err)
-				crawler.metricResponseCode.WithLabelValues(endpoint.URL).Set(999)
+				crawler.metricResponseCode.WithLabelValues(endpoint.URL, severity).Set(999)
 				time.Sleep(time.Second * time.Duration(endpoint.ScrapeInverval))
 				continue
 			}
 			elapsed := time.Since(start).Seconds()
-			crawler.metricResponseTime.WithLabelValues(endpoint.URL).Set(float64(elapsed))
+			crawler.metricResponseTime.WithLabelValues(endpoint.URL, severity).Set(float64(elapsed))
 			processBody(*response, endpoint, crawler.metricResponseBodyAssert)
-			crawler.metricResponseCode.WithLabelValues(endpoint.URL).Set(float64(response.StatusCode))
+			crawler.metricResponseCode.WithLabelValues(endpoint.URL, severity).Set(float64(response.StatusCode))
 			response.Body.Close()
 		case "POST-JSON":
 			data, err := json.Marshal(endpoint.RequestData)
@@ -107,15 +113,15 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 				log.SharedLogger.Errorf("unable to do request to %s error:%+v\n", endpoint.URL, err)
 			}
 			elapsed := time.Since(start).Seconds()
-			crawler.metricResponseTime.WithLabelValues(endpoint.URL).Set(float64(elapsed))
+			crawler.metricResponseTime.WithLabelValues(endpoint.URL, severity).Set(float64(elapsed))
 			if err != nil {
 				log.SharedLogger.Errorf("%+v\n", err)
-				crawler.metricResponseCode.WithLabelValues(endpoint.URL).Set(999)
+				crawler.metricResponseCode.WithLabelValues(endpoint.URL, severity).Set(999)
 				time.Sleep(time.Second * time.Duration(endpoint.ScrapeInverval))
 				continue
 			}
 			processBody(*response, endpoint, crawler.metricResponseBodyAssert)
-			crawler.metricResponseCode.WithLabelValues(endpoint.URL).Set(float64(response.StatusCode))
+			crawler.metricResponseCode.WithLabelValues(endpoint.URL, severity).Set(float64(response.StatusCode))
 			response.Body.Close()
 		default:
 			urlData := "?"
@@ -134,15 +140,15 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 				log.SharedLogger.Errorf("unable to do request to %s error:%+v\n", endpoint.URL, err)
 			}
 			elapsed := time.Since(start).Seconds()
-			crawler.metricResponseTime.WithLabelValues(endpoint.URL).Set(float64(elapsed))
+			crawler.metricResponseTime.WithLabelValues(endpoint.URL, severity).Set(float64(elapsed))
 			if err != nil {
 				log.SharedLogger.Errorf("%+v\n", err)
-				crawler.metricResponseCode.WithLabelValues(endpoint.URL).Set(999)
+				crawler.metricResponseCode.WithLabelValues(endpoint.URL, severity).Set(999)
 				time.Sleep(time.Second * time.Duration(endpoint.ScrapeInverval))
 				continue
 			}
 			processBody(*response, endpoint, crawler.metricResponseBodyAssert)
-			crawler.metricResponseCode.WithLabelValues(endpoint.URL).Set(float64(response.StatusCode))
+			crawler.metricResponseCode.WithLabelValues(endpoint.URL, severity).Set(float64(response.StatusCode))
 			response.Body.Close()
 		}
 		log.SharedLogger.Debug(endpoint.MetricName)
@@ -166,7 +172,7 @@ func processBody(response http.Response, endpoint config.Endpoint, metricRespons
 		} else {
 			metricResponseBodyAssert.WithLabelValues(endpoint.URL).Set(0)
 		}
-		log.SharedLogger.Debugf("%s", body)
+		log.SharedLogger.Debugf("endpoint: %s, response: %s", endpoint.URL, body)
 	}
 }
 
@@ -175,16 +181,16 @@ func (crawler Crawler) recordMetrics() {
 	crawler.metricResponseCode = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "http_exporter_response_code",
 		Help: "Last responseCode for endpoint",
-	}, []string{"url"})
+	}, []string{"url", "severity"})
 	crawler.metricResponseBodyAssert = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "http_exporter_response_body_assert",
 		Help: "Last response body regex assert for endpoint",
-	}, []string{"url"})
+	}, []string{"url", "severity"})
 
 	crawler.metricResponseTime = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "http_exporter_response_time",
 		Help: "Last response time for endpoint",
-	}, []string{"url"})
+	}, []string{"url", "severity"})
 
 	for _, endpoint := range crawler.Config.Endpoints {
 		go crawler.endpointLoop(endpoint)
