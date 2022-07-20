@@ -23,7 +23,9 @@ func InitLogger(logConfig config.Log) {
 }
 
 func getEncoder() zapcore.Encoder {
-	return zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig())
+	config := zap.NewProductionEncoderConfig()
+	config.EncodeTime = zapcore.ISO8601TimeEncoder
+	return zapcore.NewJSONEncoder(config)
 }
 
 func getLogWriter(logPath string) zapcore.WriteSyncer {
