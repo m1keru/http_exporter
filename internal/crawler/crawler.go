@@ -130,6 +130,8 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 				for key, val := range endpoint.RequestData {
 					urlData += key + "=" + val + "&"
 				}
+			} else {
+				urlData = ""
 			}
 			start := time.Now()
 			req, err := http.NewRequest("GET", endpoint.URL+urlData, nil)
