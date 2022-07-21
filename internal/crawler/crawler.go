@@ -80,6 +80,7 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 			}
 			r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 			r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
+			r.Header.Set("User-Agent", "http_exporter/healthcheck")
 			start := time.Now()
 			response, err := client.Do(r)
 			if err != nil {
@@ -106,6 +107,7 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 				r.SetBasicAuth(endpoint.BasicAuthUserName, endpoint.BasicAuthPassword)
 			}
 			r.Header.Add("Content-Type", "application/json; charset=UTF-8")
+			r.Header.Set("User-Agent", "http_exporter/healthcheck")
 			start := time.Now()
 			response, err := client.Do(r)
 			if err != nil {
@@ -134,6 +136,7 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 			if endpoint.BasicAuthUserName != "" && endpoint.BasicAuthPassword != "" {
 				req.SetBasicAuth(endpoint.BasicAuthUserName, endpoint.BasicAuthPassword)
 			}
+			req.Header.Set("User-Agent", "http_exporter/healthcheck")
 			response, err := client.Do(req)
 			if err != nil {
 				log.SharedLogger.Errorf("unable to do request to %s error:%+v\n", endpoint.URL, err)
