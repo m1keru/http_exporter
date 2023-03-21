@@ -135,6 +135,9 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 			}
 			start := time.Now()
 			req, err := http.NewRequest("GET", endpoint.URL+urlData, nil)
+			if err != nil {
+				log.SharedLogger.Errorf("unable to build http request %s error:%+v\n", endpoint.URL, err)
+			}
 			if endpoint.BasicAuthUserName != "" && endpoint.BasicAuthPassword != "" {
 				req.SetBasicAuth(endpoint.BasicAuthUserName, endpoint.BasicAuthPassword)
 			}
@@ -157,6 +160,7 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 		}
 		log.SharedLogger.Debug(endpoint.MetricName)
 		time.Sleep(time.Second * time.Duration(endpoint.ScrapeInverval))
+		client.CloseIdleConnections()
 	}
 }
 
