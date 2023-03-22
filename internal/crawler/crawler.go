@@ -3,7 +3,7 @@ package crawler
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -160,7 +160,6 @@ func (crawler Crawler) endpointLoop(endpoint config.Endpoint) {
 		}
 		log.SharedLogger.Debug(endpoint.MetricName)
 		time.Sleep(time.Second * time.Duration(endpoint.ScrapeInverval))
-		client.CloseIdleConnections()
 	}
 }
 
@@ -171,7 +170,7 @@ func processBody(response http.Response, endpoint config.Endpoint, metricRespons
 		if err != nil {
 			log.SharedLogger.Errorf("crawler: unable to parse regex for %s", endpoint)
 		}
-		body, err := ioutil.ReadAll(response.Body)
+		body, err := io.ReadAll(response.Body)
 		if err != nil {
 			log.SharedLogger.Errorf("crawler error: unable to read response body %+v\n")
 		}

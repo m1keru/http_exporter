@@ -14,7 +14,7 @@ import (
 )
 
 // AppVersion -release version
-const AppVersion = "0.0.18"
+const AppVersion = "0.0.19"
 
 func main() {
 	configpath := flag.String("config", "config.yaml", "path to config file")
