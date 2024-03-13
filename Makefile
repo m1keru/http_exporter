@@ -1,7 +1,7 @@
 # tool marcros
+SHELL := /bin/bash
 CC := go
 CCFLAG :=
-
 # path marcros
 BIN_PATH := dist
 OBJ_PATH := obj

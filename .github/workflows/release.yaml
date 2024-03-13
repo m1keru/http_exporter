@@ -16,11 +16,11 @@ jobs:
             goos: darwin
     steps:
     - uses: actions/checkout@v2
-    - uses: wangyoucao577/go-release-action@v1.22
+    - uses: wangyoucao577/go-release-action@v1.49
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         goos: ${{ matrix.goos }}
         goarch: ${{ matrix.goarch }}
         binary_name: "http_exporter"
-        extra_files: config/config.yaml.tpl init/http_exporter.service dist/http_exporter Makefile README.md
+        extra_files: config/config.yaml.tpl init/http_exporter.service dist/http_exporter Makefile README.md LICENSE
         build_command: make
